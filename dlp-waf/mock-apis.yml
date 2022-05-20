@@ -52,3 +52,32 @@ spec:
           upstream:
             name: default-mock-apis-5000
             namespace: gloo-system
+    - routeAction:
+        single:
+          upstream:
+            name: default-mock-apis-5000
+            namespace: gloo-system
+      matchers:
+        - prefix: "/tracks"
+      options:
+        waf:
+          disabled: true
+        dlp:
+          enabledFor: ACCESS_LOGS
+          actions:
+            - actionType: CUSTOM # CUSTOM is the default, so it's not necessary to put the actionType here
+              customAction:
+                name: api-key
+                maskChar: "Y"
+                percent:
+                  value: 25
+                regexActions:
+                  - regex: api-key:? *([^\\n]*)(?:\\n)
+                    subgroup: 1
+            - actionType: KEYVALUE
+              keyValueAction:
+                keyToMask: api-key
+                maskChar: "*"
+                name: api-key   # only used for logging
+                percent:
+                  value: 25  # % of regex match to mask
